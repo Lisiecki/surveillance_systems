@@ -56,29 +56,23 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
         start_y = 0
         end_x = 0
         end_y = 0
-        print("h")
         motion_data = np.sqrt(
             np.square(motion_data['x'].astype(np.float)) +
             np.square(motion_data['y'].astype(np.float))
             ).clip(0, 255).astype(np.uint8)
-        print("l")
         # Determine the boundaries of an intruder in the motion data
-        print("d")
         for i in range(picture_rows_count):
             b_flag = 0
             for j in range(picture_columns_count):
-                print("d1")
                 if motion_data[i][j] > 50:
                     # Left boundary
                     start_x = j
                     # Upper boundary
                     start_y = i
-                    print("d2")
                     b_flag = 1
                     break
             if b_flag == 1:
                 break
-        print("p")
         for i in reversed(range(picture_rows_count)):
             b_flag = 0
             for j in reversed(range(picture_columns_count)):
@@ -91,13 +85,11 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
                     break
             if b_flag == 1:
                 break
-        print("e")
         # Get the horizontal center of the moving object
         x = end_x - (start_x / 2)
         # Determine the position of the intruder based on his/her position in the the distances array
         intruder_distance = distances[end_y][x]
         intruder_direction = directions[x]
-        print("c")
 
 with picamera.PiCamera() as camera:
     with DetectMotion(camera) as output:
