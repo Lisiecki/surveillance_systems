@@ -11,7 +11,7 @@ import picamera
  
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--images", required=True, help="path to images directory")
+ap.add_argument("-i", "--images", required=False, help="path to images directory")
 args = vars(ap.parse_args())
  
 # initialize the HOG descriptor/person detector
@@ -19,12 +19,12 @@ hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
 with picamera.PiCamera() as camera:
-    camera.resolution = (320, 240)
+    camera.resolution = (128, 96)
     camera.framerate = 24
     time.sleep(2)
-    image = np.empty((240, 320, 3), dtype=np.uint8)
+    image = np.empty((480 * 640 * 3), dtype=np.uint8)
     camera.capture(image, 'bgr')
-    image = imutils.resize(image, width=min(400, image.shape[1]))
+    #image = imutils.resize(image, width=min(400, image.shape[0]))
     orig = image.copy()
 
     # detect people in the image
@@ -46,9 +46,9 @@ with picamera.PiCamera() as camera:
         cv2.rectangle(image, (xA, yA), (xB, yB), (0, 255, 0), 2)
 
     # show some information on the number of bounding boxes
-    filename = imagePath[imagePath.rfind("/") + 1:]
-    print("[INFO] {}: {} original boxes, {} after suppression".format(
-	    filename, len(rects), len(pick)))
+    #filename = imagePath[imagePath.rfind("/") + 1:]
+    #print("[INFO] {}: {} original boxes, {} after suppression".format(
+	    #filename, len(rects), len(pick)))
 
     # show the output images
     cv2.imshow("Before NMS", orig)
