@@ -5,6 +5,7 @@ import picamera.array
 from PIL import Image
 
 # !!! only temporary for testing !!!
+# TODO: enter values on setup and define default values for testing or as default setup
 angle = 40
 sensor_height = 1.5
 picture_rows_count = 5
@@ -49,6 +50,7 @@ for i in range(np.shape(distances)[0]):
             distances[i][j] = v_distance / math.cos(math.radians(h_angle))
 
 class DetectMotion(picamera.array.PiMotionAnalysis):
+    # Analyze motion data to determine current location of intruder
     def analyze(self, motion_data):
         global intruder_direction
         global intruder_distance
@@ -61,8 +63,12 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
             np.square(motion_data['y'].astype(np.float))
             ).clip(0, 255).astype(np.uint8)
         # Determine the boundaries of an intruder in the motion data
+        # TODO: instead measure boundaries as follows:
+        # start_x: first column with enough SADs >= threshold
+        # start_y: first row with enough SADs >= threshold
+        # end_x: last column with enough SADs >= threshold
+        # end_y: last row with enough SADs | >= threshold
         for i in range(picture_rows_count):
-            b_flag = 0
             for j in range(picture_columns_count):
                 if motion_data[i][j] > 50:
                     # Left boundary
