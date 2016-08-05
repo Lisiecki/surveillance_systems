@@ -12,6 +12,9 @@ picture_columns_count = 9
 HORIZONTAL_ANGLE = 50
 VERTICAL_ANGLE = 45
 
+RES_WIDTH = 1280
+RES_HEIGHT = 720
+
 # rows represent y coordinates of points
 # columns represent x coordinates of points
 directions = np.zeros(picture_columns_count)
@@ -24,7 +27,7 @@ monitored_points_json = []
 monitored_points = []
 v_angle = 1.1
 h_angle = 1.1
-intruder_direction = (0, 0)
+intruder_direction = 0
 intruder_distance = 0
 
 # Calculate the distance from the camera to each monitored point(j, i) in the camera's view
@@ -46,46 +49,55 @@ for i in range(np.shape(distances)[0]):
             distances[i][j] = v_distance / math.cos(math.radians(h_angle))
 
 class DetectMotion(picamera.array.PiMotionAnalysis):
-    def analyze(self, a):
+    def analyze(self, motion_data):
         global intruder_direction
         global intruder_distance
         start_x = 0
         start_y = 0
         end_x = 0
         end_y = 0
-        # Load the motion data from the string to a numpy array
-        motion_data = np.fromstring(s, dtype=motion_dtype)
-        # Re-shape it and calculate the magnitude of each vector
-        motion_data = motion_data.reshape((self.rows, self.cols))
+        print("h")
         motion_data = np.sqrt(
             np.square(motion_data['x'].astype(np.float)) +
             np.square(motion_data['y'].astype(np.float))
             ).clip(0, 255).astype(np.uint8)
-
+        print("l")
         # Determine the boundaries of an intruder in the motion data
-        for i in range(motion_data):
-            for j in range(motion_data[i]):
-                if data[i][j] > 50:
+        print("d")
+        for i in range(picture_rows_count):
+            b_flag = 0
+            for j in range(picture_columns_count):
+                print("d1")
+                if motion_data[i][j] > 50:
                     # Left boundary
-                    start_x = RES_WIDTH / motion_data.shape(0) * j
+                    start_x = RES_WIDTH / picture_columns_count * j - 1
                     # Upper boundary
-                    start_y = RES_HEIGHT / motion_data.shape(1) * i
-        for i in range(reversed(motion_data)):
-            for j in range(reversed(motion_data[i])):
+                    start_y = RES_HEIGHT / picture_rows_count * i - 1
+                    print("d2")
+                    b_flag = 1
+                    break
+            if b_flag == 1:
+                break
+        print("p")
+        for i in reversed(range(picture_rows_count)):
+            b_flag = 0
+            for j in reversed(range(picture_columns_count)):
                 if motion_data[i][j] > 50:
                     # Right boundary
-                    end_x = RES_WIDTH / motion_data.shape(0) * j
+                    end_x = picture_columns_count * j - 1
                     # Lower boundary
-                    end_y = RES_HEIGHT / motion_data.shape(1) * i
-        
+                    end_y = picture_rows_count * i - 1
+                    b_flag = 1
+                    break
+            if b_flag == 1:
+                break
+        print("e")
         # Get the horizontal center of the moving object
-        x = (end_x - start_x) / 2
+        x = end_x - (start_x / 2)
         # Determine the position of the intruder based on his/her position in the the distances array
-        intruder_distance = distances[end_y, x]
+        intruder_distance = distances[end_y][x]
         intruder_direction = directions[x]
-
-        # Pretend we wrote all the bytes of s
-        return len(s)
+        print("c")
 
 with picamera.PiCamera() as camera:
     with DetectMotion(camera) as output:
@@ -98,10 +110,10 @@ with picamera.PiCamera() as camera:
                     # Record motion data to our custom output object
                     motion_output=output
                     )
-        while 1:
-            try:
+        try:
+            while 1:
+                i = 1
                 camera.annotate_text = str(intruder_distance) + ' meters ' + str(int(intruder_direction)) + ' degrees'
-            except KeyboardInterrupt:
-                break
-        camera.stop_recording()
-        camera.stop_preview()
+        except KeyboardInterrupt:
+            camera.stop_preview()
+            camera.stop_recording()
