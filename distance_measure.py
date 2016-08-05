@@ -109,6 +109,7 @@ with picamera.PiCamera() as camera:
                     motion_output=output
                     )
         try:
+            # TODO: add grids and (if possible) distances+directions to the preview
             while 1:
                 i = 1
                 camera.annotate_text = str(intruder_distance) + ' meters ' + str(int(intruder_direction)) + ' degrees'
