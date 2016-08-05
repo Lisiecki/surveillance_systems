@@ -19,17 +19,18 @@ hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
 with picamera.PiCamera() as camera:
-    camera.resolution = (128, 96)
+    camera.resolution = (320, 240)
     camera.framerate = 24
     time.sleep(2)
-    image = np.empty((480 * 640 * 3), dtype=np.uint8)
-    camera.capture(image, 'bgr')
-    #image = imutils.resize(image, width=min(400, image.shape[0]))
+    camera.capture("foo.png")
+    print("took picture")
+    image = cv2.imread("./foo.png")
+    #image = imutils.resize(image, width=min(400, image.shape[1]))
     orig = image.copy()
 
     # detect people in the image
     (rects, weights) = hog.detectMultiScale(image, winStride=(4, 4),
-	    padding=(8, 8), scale=1.05)
+	    padding=(32, 32), scale=1.05)
 
     # draw the original bounding boxes
     for (x, y, w, h) in rects:
@@ -51,6 +52,8 @@ with picamera.PiCamera() as camera:
 	    #filename, len(rects), len(pick)))
 
     # show the output images
+    #cv2.imshow("Before NMS", orig)x
     cv2.imshow("Before NMS", orig)
     cv2.imshow("After NMS", image)
     cv2.waitKey(0)
+
