@@ -61,19 +61,22 @@ intruder_distance = 0
 # from i to the amount of points on the y-axis
 for i in range(np.shape(distances)[0]):
     v_direction = float(VERTICAL_DIRECTION + float(VERTICAL_FIELD_OF_VIEW) / 2.0 - float(VERTICAL_VIEW_POINTS_INTERVAL) / 2.0 - i * float(VERTICAL_VIEW_POINTS_INTERVAL))
-    v_distance = LENSE_HEIGHT / math.cos(math.radians(v_direction))
+    # Calculate diagonal distance by definition cos(angle) = adjacent leg / hypotenuse
+    d_distance = LENSE_HEIGHT / math.cos(math.radians(v_direction))
+    # Calculate horizontal distance with pythagoras' theorem
+    h_distance = math.sqrt((d_distance * d_distance) + (LENSE_HEIGHT * LENSE_HEIGHT))
     # Then calculate the distance of each block based on distance = vertical distance / cos(horizontal angle)
     # from j to the amount of points on the x-axis
     for j in range(np.shape(distances)[1]):
         # Determine the horizontal direction (in degrees) of point(j, i)
         h_direction = float(j * HORIZONTAL_VIEW_POINTS_INTERVAL - HORIZONTAL_FIELD_OF_VIEW / 2.0 + HORIZONTAL_VIEW_POINTS_INTERVAL / 2.0)
-        # Calculate total distance of point(j, i) by distance = c / cos(alpha)
+        # Calculate actual distance from the camera to the monitored object by definition cos(angle) = adjacent leg / hypotenuse
         # If alpha is negative then negate alpha for this operation
         directions[j] = h_direction
         if h_direction < 0:
-            distances[i][j] = v_distance / math.cos(math.radians(-h_direction))
+            distances[i][j] = h_distance / math.cos(math.radians(-h_direction))
         else:
-            distances[i][j] = v_distance / math.cos(math.radians(h_direction))
+            distances[i][j] = h_distance / math.cos(math.radians(h_direction))
 
 class DetectMotion(picamera.array.PiMotionAnalysis):
     # Analyze motion data to determine current location of intruder
