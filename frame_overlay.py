@@ -5,7 +5,7 @@ import math
 import time
 import picamera
 import picamera.array
-from picamera.array import PiMotionAnalysis
+from picamera.array import PiRGBArray
 from io import BytesIO
 from PIL import Image
 
@@ -23,15 +23,15 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
 with picamera.PiCamera() as camera:
     with DetectMotion(camera) as output:
         stream = BytesIO()
-        camera.resolution = (RES_WIDTH, RES_HEIGHT)
-        camera.framerate = FRAMERATE
-        rawCapture = PiMotionAnalysis(camera, size=(640, 480))
+        camera.resolution = (640, 480)
+        camera.framerate = 30
+        rawCapture = PiRGBArray(camera)
 
         # allow the camera to warmup
         time.sleep(0.1)
         try:
             # capture frames from the camera
-            for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+            for frame in camera.capture_continuous(rawCapture, format='rgb', use_video_port=True):
 	            # grab the raw NumPy array representing the image, then initialize the timestamp
 	            # and occupied/unoccupied text
                 image = frame.array

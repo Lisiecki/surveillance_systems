@@ -12,8 +12,8 @@ ap.add_argument("-hd", "--hdirection", default=0, required=False, type=int, help
 ap.add_argument("-vp", "--vview", default=40, required=False, type=int, help="vertical field of view of the camera")
 ap.add_argument("-hp", "--hview", default=50, required=False, type=int, help="horizontal field of view of the camera")
 ap.add_argument("-lh", "--lheight", default=2.41, required=False, type=float, help="the height of the camera's lense in meter")
-ap.add_argument("-rw", "--reswidth", default=1280, required=False, type=int, help="resolution width of the video stream")
-ap.add_argument("-rh", "--resheight", default=720, required=False, type=int, help="resolution height of the video stream")
+ap.add_argument("-rw", "--reswidth", default=640, required=False, type=int, help="resolution width of the video stream")
+ap.add_argument("-rh", "--resheight", default=360, required=False, type=int, help="resolution height of the video stream")
 ap.add_argument("-gr", "--grows", default=5, required=False, type=int, help="preview grid rows")
 ap.add_argument("-gc", "--gcolumns", default=9, required=False, type=int, help="preview grid columns")
 ap.add_argument("-f", "--framerate", default=15, required=False, type=int, help="framerate of the video stream")
@@ -81,6 +81,10 @@ for i in range(np.shape(distances)[0]):
 class DetectMotion(picamera.array.PiMotionAnalysis):
     # Analyze motion data to determine current location of intruder
     def analyze(self, motion_data):
+        motion_data = np.sqrt(
+            np.square(motion_data['x'].astype(np.float)) +
+            np.square(motion_data['y'].astype(np.float))
+            ).clip(0, 255).astype(np.uint8)
         if (motion_data > 50).sum() > 10:
             global intruder_direction
             global intruder_distance
@@ -88,10 +92,6 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
             start_y = 0
             end_x = 0
             end_y = 0
-            motion_data = np.sqrt(
-                np.square(motion_data['x'].astype(np.float)) +
-                np.square(motion_data['y'].astype(np.float))
-                ).clip(0, 255).astype(np.uint8)
             # Determine the boundaries of an intruder as rectangle in the motion data
             # start_x: first column with enough SADs >= threshold
             for x1 in range(np.shape(motion_data)[1]):
