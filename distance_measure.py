@@ -11,7 +11,7 @@ ap.add_argument("-vd", "--vdirection", default=45, required=False, type=int, hel
 ap.add_argument("-hd", "--hdirection", default=0, required=False, type=int, help="the horizontal direction whereto the camera looks in degrees")
 ap.add_argument("-vp", "--vpoints", default=640, required=False, type=int, help="amount of vertical view points. must divide resolution width of the video stream")
 ap.add_argument("-hp", "--hpoints", default=360, required=False, type=int, help="amount of horizontal view points. must divide resolution width of the video stream")
-ap.add_argument("-lh", "--lheight", default=2.0, required=False, type=float, help="the height of the camera's lense in meter")
+ap.add_argument("-lh", "--lheight", default=2.41, required=False, type=float, help="the height of the camera's lense in meter")
 ap.add_argument("-rw", "--reswidth", default=1280, required=False, type=int, help="resolution width of the video stream")
 ap.add_argument("-rh", "--resheight", default=720, required=False, type=int, help="resolution height of the video stream")
 ap.add_argument("-gr", "--grows", default=5, required=False, type=int, help="preview grid rows")
