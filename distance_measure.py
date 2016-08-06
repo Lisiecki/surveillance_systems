@@ -86,6 +86,7 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
         # TODO go through motion_data clusterwise!
         # Determine the boundaries of an intruder as rectangle in the motion data
         # start_x: first column with enough SADs >= threshold
+        print(np.shape(motion_data))
         for x1 in range(np.shape(motion_data)[0]):
             if (motion_data[x1, :] > 50).sum() > 10:
                 start_x = x1
@@ -108,6 +109,8 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
         # Get the horizontal center of the moving object
         x = end_x - (start_x / 2)
         # Determine the position of the intruder based on his/her position in the the distances array
+        print(np.shape(distances))
+        print(np.shape(directions))
         intruder_distance = distances[end_y][x]
         intruder_direction = directions[x]
 
