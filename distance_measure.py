@@ -7,7 +7,7 @@ from PIL import Image
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-vd", "--vdirection", default=45, required=False, type=int, help="the vertical direction whereto the camera looks in degrees")
+ap.add_argument("-vd", "--vdirection", default=40, required=False, type=int, help="the vertical direction whereto the camera looks in degrees")
 ap.add_argument("-hd", "--hdirection", default=0, required=False, type=int, help="the horizontal direction whereto the camera looks in degrees")
 ap.add_argument("-vp", "--vpoints", default=640, required=False, type=int, help="amount of vertical view points. must divide resolution width of the video stream")
 ap.add_argument("-hp", "--hpoints", default=360, required=False, type=int, help="amount of horizontal view points. must divide resolution width of the video stream")
