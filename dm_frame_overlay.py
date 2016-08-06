@@ -5,7 +5,7 @@ import math
 import time
 import picamera
 import picamera.array
-from picamera.array import PiMotionAnalysis
+from picamera.array import PiRGBArray
 from io import BytesIO
 from PIL import Image
 
@@ -133,7 +133,7 @@ with picamera.PiCamera() as camera:
         stream = BytesIO()
         camera.resolution = (RES_WIDTH, RES_HEIGHT)
         camera.framerate = FRAMERATE
-        rawCapture = PiMotionAnalysis(camera, size=(640, 480))
+        rawCapture = PiRGBArray(camera, size=(640, 480))
 
         # allow the camera to warmup
         time.sleep(0.1)
