@@ -19,6 +19,7 @@ hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
 with picamera.PiCamera() as camera:
+    #initialize the picamera
     camera.resolution = (320, 240)
     camera.framerate = 24
     time.sleep(2)
