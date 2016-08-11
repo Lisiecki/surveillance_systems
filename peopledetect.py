@@ -40,7 +40,7 @@ if __name__ == '__main__':
     hog = cv2.HOGDescriptor()
     hog.setSVMDetector( cv2.HOGDescriptor_getDefaultPeopleDetector() )
 
-    default = ['./IMG_20151231_095401.png'] if len(sys.argv[1:]) == 0 else []
+    default = ['./IMG_20151230_183823.png'] if len(sys.argv[1:]) == 0 else []
 
     for fn in it.chain(*map(glob, default + sys.argv[1:])):
         print(fn, ' - ',)
