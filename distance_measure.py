@@ -3,13 +3,36 @@ import picamera
 import picamera.array
 from PIL import Image
 
+# rows represent y coordinates of points
+# columns represent x coordinates of points
+distances = np.zeros((picture_rows_count, picture_columns_count))
+monitored_points_json = []
+monitored_points = []
+v_angle = 1.1
+h_angle = 1.1
+# Calculate the distance from the camera to each monitored point(j, i) in the camera's view
+# from i to the amount of points on the y-axis
+for i in range(np.shape(distances)[0]):
+    v_angle = float(angle + float(VERTICAL_ANGLE) / 2.0 - float(VERTICAL_ANGLE_INTERVAL) / 2.0 - i * float(VERTICAL_ANGLE_INTERVAL))
+    v_distance = sensor_height / math.cos(math.radians(v_angle))
+    # Then calculate the distance of each block based on distance = vertical distance / cos(horizontal angle)
+    # from j to the amount of points on the x-axis
+    for j in range(np.shape(distances)[1]):
+        # Determine the horizontal direction (in degrees) of point(j, i)
+        h_angle = float(j * HORIZONTAL_ANGLE_INTERVAL - HORIZONTAL_ANGLE / 2.0 + HORIZONTAL_ANGLE_INTERVAL / 2.0)
+        # Calculate total distance of point(j, i) by distance = c / cos(alpha)
+        # If alpha is negative then negate alpha for this operation
+        if h_angle < 0:
+            distances[i][j] = v_distance / math.cos(math.radians(-h_angle))
+        else:
+            distances[i][j] = v_distance / math.cos(math.radians(h_angle))
+
 class MotionDetector(picamera.array.PiMotionAnalysis):
     def analyze(self, a):
         start_x = 0
         start_y = 0
         end_x = 0
         end_y = 0
-        camera = picamera.PiCamera()
         # Load the motion data from the string to a numpy array
         motion_data = np.fromstring(s, dtype=motion_dtype)
         # Re-shape it and calculate the magnitude of each vector
@@ -18,11 +41,7 @@ class MotionDetector(picamera.array.PiMotionAnalysis):
             np.square(motion_data['x'].astype(np.float)) +
             np.square(motion_data['y'].astype(np.float))
             ).clip(0, 255).astype(np.uint8)
-        for i in range(motion_data):
-            for j in range(motion_data[i]):
-                if data[i][j] > 50:
-                    start_x = 1280 / motion_data.shape(0) * j
-                    start_y = 720 / motion_data.shape(1) * i
+
         for i in range(reversed(motion_data)):
             for j in range(reversed(motion_data[i])):
                 if motion_data[i][j] > 50:
@@ -43,12 +62,6 @@ class MotionDetector(picamera.array.PiMotionAnalysis):
             a[y][start_x] = 0xff
             a[y][end_x] = 0xff
             y += 1
-        # Add the overlay directly into layer 3 with transparency;
-        # we can omit the size parameter of add_overlay as the
-        # size is the same as the camera's resolution
-        o = camera.add_overlay(np.getbuffer(a), layer=3, alpha=64)
-        sleep(0.033)
-        camera.remove_overlay(o)
         # Pretend we wrote all the bytes of s
         return len(s)
 
@@ -63,12 +76,10 @@ with picamera.PiCamera() as camera:
                     # Record motion data to our custom output object
                     motion_output=output
                     )
-        camera.close()
         while 1:
             try:
                 i =0
             except KeyboardInterrupt:
                 break
-        camera = picamera.PiCamera()
         camera.stop_recording()
         camera.stop_preview()
