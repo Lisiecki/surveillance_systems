@@ -45,7 +45,7 @@ for i in range(np.shape(distances)[0]):
         else:
             distances[i][j] = v_distance / math.cos(math.radians(h_angle))
 
-class MotionDetector(picamera.array.PiMotionAnalysis):
+class DetectMotion(picamera.array.PiMotionAnalysis):
     def analyze(self, a):
         global intruder_direction
         global intruder_distance
