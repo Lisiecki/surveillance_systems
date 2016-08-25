@@ -5,6 +5,7 @@ from PIL import Image
 
 # !!! only temporary for testing !!!
 angle = 40
+sensor_height = 1.5
 picture_rows_count = 5
 picture_columns_count = 9
 HORIZONTAL_ANGLE = 50
