@@ -3,11 +3,13 @@ import picamera
 import picamera.array
 from PIL import Image
 
+# !!! only temporary for testing !!!
+angle = 40
 picture_rows_count = 5
 picture_columns_count = 9
-
 HORIZONTAL_ANGLE = 50
 VERTICAL_ANGLE = 45
+
 # rows represent y coordinates of points
 # columns represent x coordinates of points
 directions = np.zeros((picture_rows_count, picture_columns_count))
