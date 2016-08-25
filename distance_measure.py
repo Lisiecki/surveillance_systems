@@ -14,7 +14,7 @@ VERTICAL_ANGLE = 45
 
 # rows represent y coordinates of points
 # columns represent x coordinates of points
-directions = np.zeros((picture_rows_count, picture_columns_count))
+directions = np.zeros(picture_columns_count)
 distances = np.zeros((picture_rows_count, picture_columns_count))
 
 HORIZONTAL_ANGLE_INTERVAL = float(HORIZONTAL_ANGLE) / float(picture_columns_count)
@@ -39,7 +39,7 @@ for i in range(np.shape(distances)[0]):
         h_angle = float(j * HORIZONTAL_ANGLE_INTERVAL - HORIZONTAL_ANGLE / 2.0 + HORIZONTAL_ANGLE_INTERVAL / 2.0)
         # Calculate total distance of point(j, i) by distance = c / cos(alpha)
         # If alpha is negative then negate alpha for this operation
-        directions[i][j] = (v_angle, h_angle)
+        directions[j] = h_angle
         if h_angle < 0:
             distances[i][j] = v_distance / math.cos(math.radians(-h_angle))
         else:
@@ -82,7 +82,7 @@ class MotionDetector(picamera.array.PiMotionAnalysis):
         x = (end_x - start_x) / 2
         # Determine the position of the intruder based on his/her position in the the distances array
         intruder_distance = distances[end_y, x]
-        intruder_direction = directions[y][x]
+        intruder_direction = directions[x]
 
         # Pretend we wrote all the bytes of s
         return len(s)
