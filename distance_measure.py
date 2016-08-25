@@ -1,4 +1,5 @@
 ﻿import numpy as np
+import math
 import picamera
 import picamera.array
 from PIL import Image
