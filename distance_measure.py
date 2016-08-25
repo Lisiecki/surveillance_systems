@@ -3,13 +3,23 @@ import picamera
 import picamera.array
 from PIL import Image
 
+VERTICAL_ANGLE = 30
+VERTICAL_ANGLE_INTERVAL = 5
+
+HORIZONTAL_ANGLE = 30
+HORIZONTAL_ANGLE_INTERVAL = 5
+
 # rows represent y coordinates of points
 # columns represent x coordinates of points
+directions = np.zeros((picture_rows_count, picture_columns_count))
 distances = np.zeros((picture_rows_count, picture_columns_count))
 monitored_points_json = []
 monitored_points = []
 v_angle = 1.1
 h_angle = 1.1
+intruder_direction = (0, 0)
+intruder_distance = 0
+
 # Calculate the distance from the camera to each monitored point(j, i) in the camera's view
 # from i to the amount of points on the y-axis
 for i in range(np.shape(distances)[0]):
@@ -22,6 +32,7 @@ for i in range(np.shape(distances)[0]):
         h_angle = float(j * HORIZONTAL_ANGLE_INTERVAL - HORIZONTAL_ANGLE / 2.0 + HORIZONTAL_ANGLE_INTERVAL / 2.0)
         # Calculate total distance of point(j, i) by distance = c / cos(alpha)
         # If alpha is negative then negate alpha for this operation
+        directions[i][j] = (v_angle, h_angle)
         if h_angle < 0:
             distances[i][j] = v_distance / math.cos(math.radians(-h_angle))
         else:
@@ -29,6 +40,8 @@ for i in range(np.shape(distances)[0]):
 
 class MotionDetector(picamera.array.PiMotionAnalysis):
     def analyze(self, a):
+        global intruder_direction
+        global intruder_distance
         start_x = 0
         start_y = 0
         end_x = 0
@@ -42,32 +55,34 @@ class MotionDetector(picamera.array.PiMotionAnalysis):
             np.square(motion_data['y'].astype(np.float))
             ).clip(0, 255).astype(np.uint8)
 
+        # Determine the boundaries of an intruder in the motion data
+        for i in range(motion_data):
+            for j in range(motion_data[i]):
+                if data[i][j] > 50:
+                    # Left boundary
+                    start_x = RES_WIDTH / motion_data.shape(0) * j
+                    # Upper boundary
+                    start_y = RES_HEIGHT / motion_data.shape(1) * i
         for i in range(reversed(motion_data)):
             for j in range(reversed(motion_data[i])):
                 if motion_data[i][j] > 50:
-                    end_x = 1280 / motion_data.shape(0) * j
-                    end_y = 720 / motion_data.shape(1) * i
+                    # Right boundary
+                    end_x = RES_WIDTH / motion_data.shape(0) * j
+                    # Lower boundary
+                    end_y = RES_HEIGHT / motion_data.shape(1) * i
+        
+        # Get the horizontal center of the moving object
+        x = (end_x - start_x) / 2
+        # Determine the position of the intruder based on his/her position in the the distances array
+        intruder_distance = distances[end_y, x]
+        intruder_direction = directions[y][x]
 
-        # Create an array representing a 1280x720 image of
-        # a cross through the center of the display. The shape of
-        # the array must be of the form (height, width, color)
-        a = np.zeros((720, 1280, 3), dtype=np.uint8)
-        i = start_x
-        j = start_y
-        while x <= end_x:
-            a[start_y][x] = 0xff
-            a[end_y][x] = 0xff
-            i += 1
-        while y <= end_y:
-            a[y][start_x] = 0xff
-            a[y][end_x] = 0xff
-            y += 1
         # Pretend we wrote all the bytes of s
         return len(s)
 
 with picamera.PiCamera() as camera:
     with DetectMotion(camera) as output:
-        camera.resolution = (1280, 720)
+        camera.resolution = (RES_WIDTH, RES_HEIGHT)
         camera.framerate = 30
         camera.start_preview()
         camera.start_recording(
@@ -78,7 +93,7 @@ with picamera.PiCamera() as camera:
                     )
         while 1:
             try:
-                i =0
+                camera.annotate_text = str(intruder_distance) + ' meters ' + str(int(intruder_direction)) + ' degrees'
             except KeyboardInterrupt:
                 break
         camera.stop_recording()
