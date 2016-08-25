@@ -3,16 +3,17 @@ import picamera
 import picamera.array
 from PIL import Image
 
-VERTICAL_ANGLE = 30
-VERTICAL_ANGLE_INTERVAL = 5
-
-HORIZONTAL_ANGLE = 30
-HORIZONTAL_ANGLE_INTERVAL = 5
+picture_rows_count = 5
+picture_columns_count = 9
 
 # rows represent y coordinates of points
 # columns represent x coordinates of points
 directions = np.zeros((picture_rows_count, picture_columns_count))
 distances = np.zeros((picture_rows_count, picture_columns_count))
+
+HORIZONTAL_ANGLE_INTERVAL = float(HORIZONTAL_ANGLE) / float(picture_columns_count)
+VERTICAL_ANGLE_INTERVAL = float(VERTICAL_ANGLE) / float(picture_rows_count)
+
 monitored_points_json = []
 monitored_points = []
 v_angle = 1.1
