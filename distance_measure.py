@@ -70,9 +70,9 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
                 print("d1")
                 if motion_data[i][j] > 50:
                     # Left boundary
-                    start_x = RES_WIDTH / picture_columns_count * j - 1
+                    start_x = j
                     # Upper boundary
-                    start_y = RES_HEIGHT / picture_rows_count * i - 1
+                    start_y = i
                     print("d2")
                     b_flag = 1
                     break
@@ -84,9 +84,9 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
             for j in reversed(range(picture_columns_count)):
                 if motion_data[i][j] > 50:
                     # Right boundary
-                    end_x = picture_columns_count * j - 1
+                    end_x = j
                     # Lower boundary
-                    end_y = picture_rows_count * i - 1
+                    end_y = i
                     b_flag = 1
                     break
             if b_flag == 1:
