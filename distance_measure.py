@@ -63,34 +63,22 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
             np.square(motion_data['y'].astype(np.float))
             ).clip(0, 255).astype(np.uint8)
         # Determine the boundaries of an intruder in the motion data
-        # TODO: instead measure boundaries as follows:
         # start_x: first column with enough SADs >= threshold
+        for i in range(picture_columns_count):
+            if (motion_data[i] > 50).sum() > 10:
+                start_x = i
         # start_y: first row with enough SADs >= threshold
-        # end_x: last column with enough SADs >= threshold
-        # end_y: last row with enough SADs | >= threshold
         for i in range(picture_rows_count):
-            for j in range(picture_columns_count):
-                if motion_data[i][j] > 50:
-                    # Left boundary
-                    start_x = j
-                    # Upper boundary
-                    start_y = i
-                    b_flag = 1
-                    break
-            if b_flag == 1:
-                break
+            if (motion_data[:][i] > 50).sum() > 10:
+                start_y = i
+        # end_x: last column with enough SADs >= threshold
+        for i in reversed(range(picture_columns_count)):
+             if (motion_data[i] > 50).sum() > 10:
+                 end_x = i
+        # end_y: last row with enough SADs | >= threshold
         for i in reversed(range(picture_rows_count)):
-            b_flag = 0
-            for j in reversed(range(picture_columns_count)):
-                if motion_data[i][j] > 50:
-                    # Right boundary
-                    end_x = j
-                    # Lower boundary
-                    end_y = i
-                    b_flag = 1
-                    break
-            if b_flag == 1:
-                break
+            if (motion_data[:][i] > 50).sum() > 10:
+                end_y = i
         # Get the horizontal center of the moving object
         x = end_x - (start_x / 2)
         # Determine the position of the intruder based on his/her position in the the distances array
