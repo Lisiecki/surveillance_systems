@@ -100,12 +100,8 @@ with picamera.PiCamera() as camera:
         # a cross through the center of the display. The shape of
         # the array must be of the form (height, width, color)
         a = np.zeros((RES_HEIGHT, RES_WIDTH, 3), dtype=np.uint8)
-        a[RES_HEIGHT / 2, :, :] = 0xff
-        a[:, RES_WIDTH / 2, :] = 0xff
-        a[RES_HEIGHT / 4, :, :] = 0xff
-        a[:, RES_WIDTH / 4, :] = 0xff
-        a[RES_HEIGHT / 4 * 3, :, :] = 0xff
-        a[:, RES_WIDTH / 4 * 3, :] = 0xff
+        a[[RES_HEIGHT / 9, RES_HEIGHT - (RES_HEIGHT / 9), RES_HEIGHT / 9], :, :] = 0xff
+        a[:, [RES_WIDTH / 5, RES_WIDTH - (RES_WIDTH / 5), RES_WIDTH / 5], :] = 0xff
         # TODO: add grids and (if possible) distances+directions to the preview
         # Add the overlay directly into layer 3 with transparency;
         # we can omit the size parameter of add_overlay as the
