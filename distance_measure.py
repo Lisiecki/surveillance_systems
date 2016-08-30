@@ -102,6 +102,10 @@ with picamera.PiCamera() as camera:
         a = np.zeros((RES_HEIGHT, RES_WIDTH, 3), dtype=np.uint8)
         a[RES_HEIGHT / 2, :, :] = 0xff
         a[:, RES_WIDTH / 2, :] = 0xff
+        a[RES_HEIGHT / 4, :, :] = 0xff
+        a[:, RES_WIDTH / 4, :] = 0xff
+        a[RES_HEIGHT / 4 * 3, :, :] = 0xff
+        a[:, RES_WIDTH / 4 * 3, :] = 0xff
         # TODO: add grids and (if possible) distances+directions to the preview
         # Add the overlay directly into layer 3 with transparency;
         # we can omit the size parameter of add_overlay as the
