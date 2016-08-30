@@ -62,7 +62,7 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
             np.square(motion_data['x'].astype(np.float)) +
             np.square(motion_data['y'].astype(np.float))
             ).clip(0, 255).astype(np.uint8)
-        # Determine the boundaries of an intruder in the motion data
+        # Determine the boundaries of an intruder as rectangle in the motion data
         # start_x: first column with enough SADs >= threshold
         for i in range(picture_columns_count):
             if (motion_data[i] > 50).sum() > 10:
@@ -96,8 +96,18 @@ with picamera.PiCamera() as camera:
                     # Record motion data to our custom output object
                     motion_output=output
                     )
+        # Create an array representing a 1280x720 image of
+        # a cross through the center of the display. The shape of
+        # the array must be of the form (height, width, color)
+        a = np.zeros((RES_HEIGHT, RES_WIDTH, 3), dtype=np.uint8)
+        a[RES_HEIGHT / 2, :, :] = 0xff
+        a[:, RES_WIDTH / 2, :] = 0xff
+        # TODO: add grids and (if possible) distances+directions to the preview
+        # Add the overlay directly into layer 3 with transparency;
+        # we can omit the size parameter of add_overlay as the
+        # size is the same as the camera's resolution
+        o = camera.add_overlay(np.getbuffer(a), layer=3, alpha=64)
         try:
-            # TODO: add grids and (if possible) distances+directions to the preview
             while 1:
                 i = 1
                 camera.annotate_text = str(intruder_distance) + ' meters ' + str(int(intruder_direction)) + ' degrees'
