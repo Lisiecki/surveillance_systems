@@ -91,7 +91,7 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
         # start_x: first column with enough SADs >= threshold
         print("92")
         for i in range(np.shape(motion_data)[0]):
-            if (motion_data[i] > 50).sum() > 10:
+            if (motion_data[i][:] > 50).sum() > 10:
                 start_x = i
         # start_y: first row with enough SADs >= threshold
         print("96")
@@ -101,7 +101,7 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
         # end_x: last column with enough SADs >= threshold
         print("100")
         for i in reversed(range(np.shape(motion_data)[0])):
-             if (motion_data[i] > 50).sum() > 10:
+             if (motion_data[i][:] > 50).sum() > 10:
                  end_x = i
         # end_y: last row with enough SADs | >= threshold
         print("104")
