@@ -14,11 +14,11 @@ ap.add_argument("-hv", "--hview", default=50, required=False, type=int, help="ho
 ap.add_argument("-vp", "--vpoints", default=720, required=False, type=int, help="amount of vertical view points. must divide resolution width of the video stream")
 ap.add_argument("-hp", "--hpoints", default=360, required=False, type=int, help="amount of horizontal view points. must divide resolution width of the video stream")
 ap.add_argument("-lh", "--lheight", default=2.0, required=False, type=float, help="the height of the camera's lense in meter")
-ap.add_argument("-w", "--width", default=1280, required=False, type=int, help="resolution width of the video stream")
-ap.add_argument("-h", "--height", default=720, required=False, type=int, help="resolution height of the video stream")
+ap.add_argument("-rw", "--reswidth", default=1280, required=False, type=int, help="resolution width of the video stream")
+ap.add_argument("-rh", "--resheight", default=720, required=False, type=int, help="resolution height of the video stream")
 ap.add_argument("-gr", "--grows", default=5, required=False, type=int, help="preview grid rows")
 ap.add_argument("-gc", "--gcolumns", default=9, required=False, type=int, help="preview grid columns")
-ap.add_argument("-f", "--framerate", default=30, required=False, type=int, help="framerate of the video stream")
+ap.add_argument("-f", "--framerate", default=15, required=False, type=int, help="framerate of the video stream")
 args = vars(ap.parse_args())
 
 # get the parsed arguments and assign them
@@ -29,8 +29,8 @@ HORIZONTAL_VIEW_POINTS = args["hview"]
 HORIZONTAL_FIELD_OF_VIEW = args["vpoints"]
 VERTICAL_FIELD_OF_VIEW = args["hpoints"]
 LENSE_HEIGHT = args["lheight"]
-RES_WIDTH = args["width"]
-RES_HEIGHT = args["height"]
+RES_WIDTH = args["reswidth"]
+RES_HEIGHT = args["resheight"]
 PREVIEW_GRID_ROWS = args["grows"]
 PREVIEW_GRID_COLUMNS = args["gcolumns"]
 FRAMERATE = args["framerate"]
