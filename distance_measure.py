@@ -90,22 +90,22 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
         # Determine the boundaries of an intruder as rectangle in the motion data
         # start_x: first column with enough SADs >= threshold
         print("92")
-        for i in range(HORIZONTAL_VIEW_POINTS):
+        for i in range(np.shape(motion_data)[0]):
             if (motion_data[i] > 50).sum() > 10:
                 start_x = i
         # start_y: first row with enough SADs >= threshold
         print("96")
-        for i in range(VERTICAL_VIEW_POINTS):
+        for i in range(np.shape(motion_data)[1]):
             if (motion_data[:][i] > 50).sum() > 10:
                 start_y = i
         # end_x: last column with enough SADs >= threshold
         print("100")
-        for i in reversed(range(HORIZONTAL_VIEW_POINTS)):
+        for i in reversed(range(np.shape(motion_data)[0])):
              if (motion_data[i] > 50).sum() > 10:
                  end_x = i
         # end_y: last row with enough SADs | >= threshold
         print("104")
-        for i in reversed(range(VERTICAL_VIEW_POINTS)):
+        for i in reversed(range(np.shape(motion_data)[1])):
             if (motion_data[:][i] > 50).sum() > 10:
                 end_y = i
         # Get the horizontal center of the moving object
