@@ -87,6 +87,7 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
             np.square(motion_data['x'].astype(np.float)) +
             np.square(motion_data['y'].astype(np.float))
             ).clip(0, 255).astype(np.uint8)
+        # TODO go through motion_data clusterwise!
         # Determine the boundaries of an intruder as rectangle in the motion data
         # start_x: first column with enough SADs >= threshold
         print("92")
