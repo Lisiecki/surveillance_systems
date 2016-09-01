@@ -16,6 +16,8 @@ VERTICAL_ANGLE = 45
 RES_WIDTH = 1280
 RES_HEIGHT = 720
 
+PREVIEW_GRID_ROWS = 5
+PREVIEW_GRID_COLUMNS = 9
 # rows represent y coordinates of points
 # columns represent x coordinates of points
 directions = np.zeros(picture_columns_count)
@@ -100,9 +102,8 @@ with picamera.PiCamera() as camera:
         # a cross through the center of the display. The shape of
         # the array must be of the form (height, width, color)
         a = np.zeros((RES_HEIGHT, RES_WIDTH, 3), dtype=np.uint8)
-        a[RES_HEIGHT / 5 : RES_HEIGHT : RES_HEIGHT / 5, :, :] = 0xff
-        a[:, RES_WIDTH / 9 : RES_WIDTH : RES_WIDTH / 9, :] = 0xff
-        # TODO: add grids and (if possible) distances+directions to the preview
+        a[RES_HEIGHT / PREVIEW_GRID_ROWS : RES_HEIGHT : RES_HEIGHT / PREVIEW_GRID_ROWS, :, :] = 0xff
+        a[:, RES_WIDTH / PREVIEW_GRID_COLUMNS : RES_WIDTH : RES_WIDTH / PREVIEW_GRID_COLUMNS, :] = 0xff
         # Add the overlay directly into layer 3 with transparency;
         # we can omit the size parameter of add_overlay as the
         # size is the same as the camera's resolution
