@@ -1,30 +1,49 @@
-﻿import numpy as np
+﻿import argparse
+import numpy as np
 import math
 import picamera
 import picamera.array
 from PIL import Image
 
-# !!! only temporary for testing !!!
-# TODO: enter values on setup and define default values for testing or as default setup
-angle = 40
-sensor_height = 1.5
-picture_rows_count = 5
-picture_columns_count = 9
-HORIZONTAL_ANGLE = 50
-VERTICAL_ANGLE = 45
+# construct the argument parse and parse the arguments
+ap = argparse.ArgumentParser()
+ap.add_argument("-vd", "--vdirection", default=45, required=False, type=int, help="the vertical direction whereto the camera looks in degrees")
+ap.add_argument("-hd", "--hdirection", default=-30, required=False, type=int, help="the horizontal direction whereto the camera looks in degrees")
+ap.add_argument("-vv", "--vview", default=40, required=False, type=int, help="vertical field of view of the camera in degrees")
+ap.add_argument("-hv", "--hview", default=50, required=False, type=int, help="horizontal field of view of the camera in degrees")
+ap.add_argument("-vp", "--vpoints", default=720, required=False, type=int, help="amount of vertical view points. must divide resolution width of the video stream")
+ap.add_argument("-hp", "--hpoints", default=360, required=False, type=int, help="amount of horizontal view points. must divide resolution width of the video stream")
+ap.add_argument("-lh", "--lheight", default=2.0, required=False, type=float, help="the height of the camera's lense in meter")
+ap.add_argument("-w", "--width", default=1280, required=False, type=int, help="resolution width of the video stream")
+ap.add_argument("-h", "--height", default=720, required=False, type=int, help="resolution height of the video stream")
+ap.add_argument("-gr", "--grows", default=5, required=False, type=int, help="preview grid rows")
+ap.add_argument("-gc", "--gcolumns", default=9, required=False, type=int, help="preview grid columns")
+ap.add_argument("-f", "--framerate", default=30, required=False, type=int, help="framerate of the video stream")
+args = vars(ap.parse_args())
 
-RES_WIDTH = 1280
-RES_HEIGHT = 720
+# get the parsed arguments and assign them
+VERTICAL_DIRECTION = args["vdirection"]
+HORIZONTAL_DIRECTION = args["hdirection"]
+VERTICAL_VIEW_POINTS = args["vview"]
+HORIZONTAL_VIEW_POINTS = args["hview"]
+HORIZONTAL_FIELD_OF_VIEW = args["vpoints"]
+VERTICAL_FIELD_OF_VIEW = args["hpoints"]
+LENSE_HEIGHT = args["lheight"]
+RES_WIDTH = args["width"]
+RES_HEIGHT = args["height"]
+PREVIEW_GRID_ROWS = args["grows"]
+PREVIEW_GRID_COLUMNS = args["gcolumns"]
+FRAMERATE = args["framerate"]
 
-PREVIEW_GRID_ROWS = 5
-PREVIEW_GRID_COLUMNS = 9
+# horizontal direction of each view point (we only need the directions for one row)
+directions = np.zeros(HORIZONTAL_VIEW_POINTS)
+# distance of each view point
 # rows represent y coordinates of points
 # columns represent x coordinates of points
-directions = np.zeros(picture_columns_count)
-distances = np.zeros((picture_rows_count, picture_columns_count))
+distances = np.zeros((VERTICAL_VIEW_POINTS, HORIZONTAL_VIEW_POINTS))
 
-HORIZONTAL_ANGLE_INTERVAL = float(HORIZONTAL_ANGLE) / float(picture_columns_count)
-VERTICAL_ANGLE_INTERVAL = float(VERTICAL_ANGLE) / float(picture_rows_count)
+HORIZONTAL_VIEW_POINTS_INTERVAL = float(HORIZONTAL_FIELD_OF_VIEW) / float(HORIZONTAL_VIEW_POINTS)
+VERTICAL_VIEW_POINTS_INTERVAL = float(VERTICAL_FIELD_OF_VIEW) / float(VERTICAL_VIEW_POINTS)
 
 monitored_points_json = []
 monitored_points = []
@@ -36,13 +55,13 @@ intruder_distance = 0
 # Calculate the distance from the camera to each monitored point(j, i) in the camera's view
 # from i to the amount of points on the y-axis
 for i in range(np.shape(distances)[0]):
-    v_angle = float(angle + float(VERTICAL_ANGLE) / 2.0 - float(VERTICAL_ANGLE_INTERVAL) / 2.0 - i * float(VERTICAL_ANGLE_INTERVAL))
-    v_distance = sensor_height / math.cos(math.radians(v_angle))
+    v_angle = float(VERTICAL_DIRECTION + float(VERTICAL_FIELD_OF_VIEW) / 2.0 - float(VERTICAL_VIEW_POINTS_INTERVAL) / 2.0 - i * float(VERTICAL_VIEW_POINTS_INTERVAL))
+    v_distance = LENSE_HEIGHT / math.cos(math.radians(v_angle))
     # Then calculate the distance of each block based on distance = vertical distance / cos(horizontal angle)
     # from j to the amount of points on the x-axis
     for j in range(np.shape(distances)[1]):
         # Determine the horizontal direction (in degrees) of point(j, i)
-        h_angle = float(j * HORIZONTAL_ANGLE_INTERVAL - HORIZONTAL_ANGLE / 2.0 + HORIZONTAL_ANGLE_INTERVAL / 2.0)
+        h_angle = float(j * HORIZONTAL_VIEW_POINTS_INTERVAL - HORIZONTAL_FIELD_OF_VIEW / 2.0 + HORIZONTAL_VIEW_POINTS_INTERVAL / 2.0)
         # Calculate total distance of point(j, i) by distance = c / cos(alpha)
         # If alpha is negative then negate alpha for this operation
         directions[j] = h_angle
@@ -66,19 +85,19 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
             ).clip(0, 255).astype(np.uint8)
         # Determine the boundaries of an intruder as rectangle in the motion data
         # start_x: first column with enough SADs >= threshold
-        for i in range(picture_columns_count):
+        for i in range(HORIZONTAL_VIEW_POINTS):
             if (motion_data[i] > 50).sum() > 10:
                 start_x = i
         # start_y: first row with enough SADs >= threshold
-        for i in range(picture_rows_count):
+        for i in range(VERTICAL_VIEW_POINTS):
             if (motion_data[:][i] > 50).sum() > 10:
                 start_y = i
         # end_x: last column with enough SADs >= threshold
-        for i in reversed(range(picture_columns_count)):
+        for i in reversed(range(HORIZONTAL_VIEW_POINTS)):
              if (motion_data[i] > 50).sum() > 10:
                  end_x = i
         # end_y: last row with enough SADs | >= threshold
-        for i in reversed(range(picture_rows_count)):
+        for i in reversed(range(VERTICAL_VIEW_POINTS)):
             if (motion_data[:][i] > 50).sum() > 10:
                 end_y = i
         # Get the horizontal center of the moving object
