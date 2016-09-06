@@ -100,7 +100,7 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
             print("99")
             print(i)
             print(np.shape(motion_data)[1])
-            if (motion_data[:][i] > 50).sum() > 10:
+            if (motion_data[:, i] > 50).sum() > 10:
                 print("102")
                 start_y = i
         # end_x: last column with enough SADs >= threshold
@@ -111,7 +111,7 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
         # end_y: last row with enough SADs | >= threshold
         print("104")
         for i in reversed(range(np.shape(motion_data)[1])):
-            if (motion_data[:][i] > 50).sum() > 10:
+            if (motion_data[:, i] > 50).sum() > 10:
                 end_y = i
         # Get the horizontal center of the moving object
         x = end_x - (start_x / 2)
