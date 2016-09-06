@@ -11,8 +11,6 @@ ap.add_argument("-vd", "--vdirection", default=45, required=False, type=int, hel
 ap.add_argument("-hd", "--hdirection", default=0, required=False, type=int, help="the horizontal direction whereto the camera looks in degrees")
 ap.add_argument("-vv", "--vview", default=40, required=False, type=int, help="vertical field of view of the camera in degrees")
 ap.add_argument("-hv", "--hview", default=50, required=False, type=int, help="horizontal field of view of the camera in degrees")
-ap.add_argument("-vp", "--vpoints", default=720, required=False, type=int, help="amount of vertical view points. must divide resolution width of the video stream")
-ap.add_argument("-hp", "--hpoints", default=360, required=False, type=int, help="amount of horizontal view points. must divide resolution width of the video stream")
 ap.add_argument("-lh", "--lheight", default=2.0, required=False, type=float, help="the height of the camera's lense in meter")
 ap.add_argument("-rw", "--reswidth", default=1280, required=False, type=int, help="resolution width of the video stream")
 ap.add_argument("-rh", "--resheight", default=720, required=False, type=int, help="resolution height of the video stream")
@@ -21,11 +19,12 @@ ap.add_argument("-gc", "--gcolumns", default=9, required=False, type=int, help="
 ap.add_argument("-f", "--framerate", default=15, required=False, type=int, help="framerate of the video stream")
 args = vars(ap.parse_args())
 
+# MPEG macro-block represents a 16x16 pixel region of the frame
+MACRO_BLOCK_PIXELS = 16
+
 # get the parsed arguments and assign them
 VERTICAL_DIRECTION = args["vdirection"]
 HORIZONTAL_DIRECTION = args["hdirection"]
-VERTICAL_VIEW_POINTS = args["vview"]
-HORIZONTAL_VIEW_POINTS = args["hview"]
 HORIZONTAL_FIELD_OF_VIEW = args["vpoints"]
 VERTICAL_FIELD_OF_VIEW = args["hpoints"]
 LENSE_HEIGHT = args["lheight"]
@@ -34,6 +33,12 @@ RES_HEIGHT = args["resheight"]
 PREVIEW_GRID_ROWS = args["grows"]
 PREVIEW_GRID_COLUMNS = args["gcolumns"]
 FRAMERATE = args["framerate"]
+
+# equivalent to size of motion-data array
+# Motion data is calculated at the macro-block level (an MPEG macro-block represents a 16x16 pixel region of the frame), 
+# and includes one extra column of data (source: http://picamera.readthedocs.io/en/latest/recipes2.html#recording-motion-vector-data)
+VERTICAL_VIEW_POINTS = RES_HEIGHT / MACRO_BLOCK_PIXELS
+HORIZONTAL_VIEW_POINTS = RES_WIDTH / MACRO_BLOCK_PIXELS
 
 # horizontal direction of each view point (we only need the directions for one row)
 directions = np.zeros(HORIZONTAL_VIEW_POINTS)
@@ -86,7 +91,6 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
         # TODO go through motion_data clusterwise!
         # Determine the boundaries of an intruder as rectangle in the motion data
         # start_x: first column with enough SADs >= threshold
-        print(np.shape(motion_data))
         for x1 in range(np.shape(motion_data)[0]):
             if (motion_data[x1, :] > 50).sum() > 10:
                 start_x = x1
@@ -109,15 +113,13 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
         # Get the horizontal center of the moving object
         x = end_x - (start_x / 2)
         # Determine the position of the intruder based on his/her position in the the distances array
-        print(np.shape(distances))
-        print(np.shape(directions))
         intruder_distance = distances[end_y][x]
         intruder_direction = directions[x]
 
 with picamera.PiCamera() as camera:
     with DetectMotion(camera) as output:
         camera.resolution = (RES_WIDTH, RES_HEIGHT)
-        camera.framerate = args["framerate"]
+        camera.framerate = FRAMERATE
         camera.start_preview()
         camera.start_recording(
                     # Throw away the video data, but make sure we're using H.264
