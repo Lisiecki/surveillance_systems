@@ -54,13 +54,11 @@ intruder_distance = 0
 
 # Calculate the distance from the camera to each monitored point(j, i) in the camera's view
 # from i to the amount of points on the y-axis
-print("57")
 for i in range(np.shape(distances)[0]):
     v_direction = float(VERTICAL_DIRECTION + float(VERTICAL_FIELD_OF_VIEW) / 2.0 - float(VERTICAL_VIEW_POINTS_INTERVAL) / 2.0 - i * float(VERTICAL_VIEW_POINTS_INTERVAL))
     v_distance = LENSE_HEIGHT / math.cos(math.radians(v_direction))
     # Then calculate the distance of each block based on distance = vertical distance / cos(horizontal angle)
     # from j to the amount of points on the x-axis
-    print("62")
     for j in range(np.shape(distances)[1]):
         # Determine the horizontal direction (in degrees) of point(j, i)
         h_direction = float(j * HORIZONTAL_VIEW_POINTS_INTERVAL - HORIZONTAL_FIELD_OF_VIEW / 2.0 + HORIZONTAL_VIEW_POINTS_INTERVAL / 2.0)
@@ -68,10 +66,8 @@ for i in range(np.shape(distances)[0]):
         # If alpha is negative then negate alpha for this operation
         directions[j] = h_direction
         if h_direction < 0:
-            print("69")
             distances[i][j] = v_distance / math.cos(math.radians(-h_direction))
         else:
-            print("72")
             distances[i][j] = v_distance / math.cos(math.radians(h_direction))
 
 class DetectMotion(picamera.array.PiMotionAnalysis):
@@ -90,33 +86,26 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
         # TODO go through motion_data clusterwise!
         # Determine the boundaries of an intruder as rectangle in the motion data
         # start_x: first column with enough SADs >= threshold
-        print("92")
         for i in range(np.shape(motion_data)[0]):
             if (motion_data[i] > 50).sum() > 10:
                 start_x = i
         # start_y: first row with enough SADs >= threshold
-        print("96")
         for i in range(np.shape(motion_data)[1]):
-            print("99")
             print(i)
             print(np.shape(motion_data)[1])
             if (motion_data[:, i] > 50).sum() > 10:
-                print("102")
                 start_y = i
         # end_x: last column with enough SADs >= threshold
-        print("100")
         for i in reversed(range(np.shape(motion_data)[0])):
              if (motion_data[i] > 50).sum() > 10:
                  end_x = i
         # end_y: last row with enough SADs | >= threshold
-        print("104")
         for i in reversed(range(np.shape(motion_data)[1])):
             if (motion_data[:, i] > 50).sum() > 10:
                 end_y = i
         # Get the horizontal center of the moving object
         x = end_x - (start_x / 2)
         # Determine the position of the intruder based on his/her position in the the distances array
-        print("110")
         intruder_distance = distances[end_y][x]
         intruder_direction = directions[x]
 
@@ -135,9 +124,7 @@ with picamera.PiCamera() as camera:
         # a cross through the center of the display. The shape of
         # the array must be of the form (height, width, color)
         a = np.zeros((RES_HEIGHT, RES_WIDTH, 3), dtype=np.uint8)
-        print("133")
         a[RES_HEIGHT / PREVIEW_GRID_ROWS : RES_HEIGHT : RES_HEIGHT / PREVIEW_GRID_ROWS, :, :] = 0xff
-        print("135")
         a[:, RES_WIDTH / PREVIEW_GRID_COLUMNS : RES_WIDTH : RES_WIDTH / PREVIEW_GRID_COLUMNS, :] = 0xff
         # Add the overlay directly into layer 3 with transparency;
         # we can omit the size parameter of add_overlay as the
