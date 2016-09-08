@@ -9,8 +9,8 @@ from PIL import Image
 ap = argparse.ArgumentParser()
 ap.add_argument("-vd", "--vdirection", default=45, required=False, type=int, help="the vertical direction whereto the camera looks in degrees")
 ap.add_argument("-hd", "--hdirection", default=0, required=False, type=int, help="the horizontal direction whereto the camera looks in degrees")
-ap.add_argument("-vp", "--vpoints", default=640, required=False, type=int, help="amount of vertical view points. must divide resolution width of the video stream")
-ap.add_argument("-hp", "--hpoints", default=360, required=False, type=int, help="amount of horizontal view points. must divide resolution width of the video stream")
+ap.add_argument("-vp", "--vview", default=40, required=False, type=int, help="vertical field of view of the camera")
+ap.add_argument("-hp", "--hview", default=50, required=False, type=int, help="horizontal field of view of the camera")
 ap.add_argument("-lh", "--lheight", default=2.0, required=False, type=float, help="the height of the camera's lense in meter")
 ap.add_argument("-rw", "--reswidth", default=1280, required=False, type=int, help="resolution width of the video stream")
 ap.add_argument("-rh", "--resheight", default=720, required=False, type=int, help="resolution height of the video stream")
@@ -25,8 +25,8 @@ MACRO_BLOCK_PIXELS = 16
 # get the parsed arguments and assign them
 VERTICAL_DIRECTION = args["vdirection"]
 HORIZONTAL_DIRECTION = args["hdirection"]
-HORIZONTAL_FIELD_OF_VIEW = args["vpoints"]
-VERTICAL_FIELD_OF_VIEW = args["hpoints"]
+VERTICAL_FIELD_OF_VIEW = args["vview"]
+HORIZONTAL_FIELD_OF_VIEW = args["hview"]
 LENSE_HEIGHT = args["lheight"]
 RES_WIDTH = args["reswidth"]
 RES_HEIGHT = args["resheight"]
