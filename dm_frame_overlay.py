@@ -131,16 +131,27 @@ with picamera.PiCamera() as camera:
         stream = BytesIO()
         camera.resolution = (RES_WIDTH, RES_HEIGHT)
         camera.framerate = FRAMERATE
-        
-        camera.start_recording(stream, format='h264',
-                    # Record motion data to our custom output object
-                    motion_output=output
-                    )
-        vidstream = cv2.VideoCapture(stream)
+        rawCapture = PiRGBArray(camera, size=(640, 480))
+
+        # allow the camera to warmup
+        time.sleep(0.1)
         try:
-            while 1:
-                ret, frame = vidstream.read()
-                cv2.imshow('frame', frame)
+            # capture frames from the camera
+            for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+	            # grab the raw NumPy array representing the image, then initialize the timestamp
+	            # and occupied/unoccupied text
+                image = frame.array
+
+	            # show the frame
+                cv2.imshow("Frame", image)
+                key = cv2.waitKey(1) & 0xFF
+
+	            # clear the stream in preparation for the next frame
+                rawCapture.truncate(0)
+
+	            # if the `q` key was pressed, break from the loop
+                if key == ord("q"):
+                    break
         except KeyboardInterrupt:
             vidstream.release()
             cv2.destroyAllWindows()
