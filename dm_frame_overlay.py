@@ -4,6 +4,7 @@ import numpy as np
 import math
 import picamera
 import picamera.array
+from picamera.array import PiRGBArray
 from io import BytesIO
 from PIL import Image
 
