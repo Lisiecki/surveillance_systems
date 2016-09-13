@@ -1,8 +1,10 @@
 ﻿import argparse
+import cv2
 import numpy as np
 import math
 import picamera
 import picamera.array
+from io import BytesIO
 from PIL import Image
 
 # construct the argument parse and parse the arguments
@@ -12,8 +14,8 @@ ap.add_argument("-hd", "--hdirection", default=0, required=False, type=int, help
 ap.add_argument("-vp", "--vview", default=40, required=False, type=int, help="vertical field of view of the camera")
 ap.add_argument("-hp", "--hview", default=50, required=False, type=int, help="horizontal field of view of the camera")
 ap.add_argument("-lh", "--lheight", default=2.41, required=False, type=float, help="the height of the camera's lense in meter")
-ap.add_argument("-rw", "--reswidth", default=1280, required=False, type=int, help="resolution width of the video stream")
-ap.add_argument("-rh", "--resheight", default=720, required=False, type=int, help="resolution height of the video stream")
+ap.add_argument("-rw", "--reswidth", default=640, required=False, type=int, help="resolution width of the video stream")
+ap.add_argument("-rh", "--resheight", default=480, required=False, type=int, help="resolution height of the video stream")
 ap.add_argument("-gr", "--grows", default=5, required=False, type=int, help="preview grid rows")
 ap.add_argument("-gc", "--gcolumns", default=9, required=False, type=int, help="preview grid columns")
 ap.add_argument("-f", "--framerate", default=15, required=False, type=int, help="framerate of the video stream")
@@ -121,34 +123,26 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
             w = end_x-start_x
             h = end_y-start_y
             # draw the original bounding boxes
-            for (start_x, start_y, w, h) in rects:
-                cv2.rectangle(orig, (start_x, start_y), (start_x + w, start_y + h), (0, 0, 255), 2)
+            #for (start_x, start_y, w, h) in rects:
+                #cv2.rectangle(orig, (start_x, start_y), (start_x + w, start_y + h), (0, 0, 255), 2)
 
 with picamera.PiCamera() as camera:
     with DetectMotion(camera) as output:
+        stream = BytesIO()
         camera.resolution = (RES_WIDTH, RES_HEIGHT)
         camera.framerate = FRAMERATE
-        camera.start_preview()
-        camera.start_recording(
-                    # Throw away the video data, but make sure we're using H.264
-                    '/dev/null', format='h264',
+        
+        camera.start_recording(stream, format='h264',
                     # Record motion data to our custom output object
                     motion_output=output
                     )
-        # Create an array representing a 1280x720 image of
-        # a cross through the center of the display. The shape of
-        # the array must be of the form (height, width, color)
-        a = np.zeros((RES_HEIGHT, RES_WIDTH, 3), dtype=np.uint8)
-        a[RES_HEIGHT / PREVIEW_GRID_ROWS : RES_HEIGHT : RES_HEIGHT / PREVIEW_GRID_ROWS, :, :] = 0xff
-        a[:, RES_WIDTH / PREVIEW_GRID_COLUMNS : RES_WIDTH : RES_WIDTH / PREVIEW_GRID_COLUMNS, :] = 0xff
-        # Add the overlay directly into layer 3 with transparency;
-        # we can omit the size parameter of add_overlay as the
-        # size is the same as the camera's resolution
-        o = camera.add_overlay(np.getbuffer(a), layer=3, alpha=64)
+        vidstream = cv2.VideoCapture(stream)
         try:
             while 1:
-                i = 1
-                camera.annotate_text = str(intruder_distance) + ' meters ' + str(int(intruder_direction)) + ' degrees'
+                ret, frame = vidstream.read()
+                cv2.imshow('frame', frame)
         except KeyboardInterrupt:
+            vidstream.release()
+            cv2.destroyAllWindows()
             camera.stop_preview()
             camera.stop_recording()
