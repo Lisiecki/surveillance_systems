@@ -17,7 +17,12 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
                 np.square(motion_data['x'].astype(np.float)) +
                 np.square(motion_data['y'].astype(np.float))
                 ).clip(0, 255).astype(np.uint8)
+            # grab the raw NumPy array representing the image, then initialize the timestamp
+	        # and occupied/unoccupied text
+            image = frame.array
 
+	        # show the frame
+            cv2.imshow("Frame", image)
 
 
 with picamera.PiCamera() as camera:
@@ -25,28 +30,18 @@ with picamera.PiCamera() as camera:
         stream = BytesIO()
         camera.resolution = (640, 480)
         camera.framerate = 30
-        rawCapture = PiRGBArray(camera)
+        camera.start_recording(
+            # Throw away the video data, but make sure we're using H.264
+            '/dev/null', format='h264',
+            # Record motion data to our custom output object
+            motion_output=output
+            )
 
         # allow the camera to warmup
         time.sleep(0.1)
-        try:
-            # capture frames from the camera
-            for frame in camera.capture_continuous(rawCapture, format='rgb', use_video_port=True):
-	            # grab the raw NumPy array representing the image, then initialize the timestamp
-	            # and occupied/unoccupied text
-                image = frame.array
-
-	            # show the frame
-                cv2.imshow("Frame", image)
-                key = cv2.waitKey(1) & 0xFF
-
-	            # clear the stream in preparation for the next frame
-                rawCapture.truncate(0)
-
-	            # if the `q` key was pressed, break from the loop
-                if key == ord("q"):
-                    break
-        except KeyboardInterrupt:
-            vidstream.release()
-            cv2.destroyAllWindows()
-            camera.stop_recording()
+        while 1:
+            try:            
+                i = 1
+            except KeyboardInterrupt:
+                cv2.destroyAllWindows()
+                camera.stop_recording()
