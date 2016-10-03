@@ -5,19 +5,21 @@ import math
 import time
 import picamera
 import picamera.array
-from picamera.array import PiRGBArray
+from picamera.array import PiMotionAnalysis
 from io import BytesIO
 from PIL import Image
 
-class DetectMotion(picamera.array.PiMotionAnalysis):
+frame = 0
+
+class DetectMotion(PiMotionAnalysis):
     # Analyze motion data to determine current location of intruder
     def analyze(self, motion_data):
+        global frame
         motion_data = np.sqrt(
             np.square(motion_data['x'].astype(np.float)) +
             np.square(motion_data['y'].astype(np.float))
             ).clip(0, 255).astype(np.uint8)
-	    # show the frame
-        cv2.imshow("Frame", motion_data)
+        frame = motion_data
 
 
 with picamera.PiCamera() as camera:
@@ -36,7 +38,9 @@ with picamera.PiCamera() as camera:
         time.sleep(0.1)
         while 1:
             try:            
-                i = 1
+                # show the frame
+                cv2.imshow("Frame", frame)
+                time.sleep(0.1)
             except KeyboardInterrupt:
                 cv2.destroyAllWindows()
                 camera.stop_recording()
