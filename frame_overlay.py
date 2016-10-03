@@ -9,17 +9,14 @@ from picamera.array import PiMotionAnalysis
 from io import BytesIO
 from PIL import Image
 
-frame = 0
-
 class DetectMotion(PiMotionAnalysis):
     # Analyze motion data to determine current location of intruder
     def analyze(self, motion_data):
-        global frame
         motion_data = np.sqrt(
             np.square(motion_data['x'].astype(np.float)) +
             np.square(motion_data['y'].astype(np.float))
             ).clip(0, 255).astype(np.uint8)
-        frame = motion_data
+        print("i")
 
 
 with picamera.PiCamera() as camera:
