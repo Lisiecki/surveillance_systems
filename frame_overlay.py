@@ -6,6 +6,7 @@ import time
 import picamera
 import picamera.array
 from picamera.array import PiMotionAnalysis
+from picamera.array import PiRGBArray
 from io import BytesIO
 from PIL import Image
 
@@ -24,15 +25,8 @@ with picamera.PiCamera() as camera:
         stream = BytesIO()
         camera.resolution = (640, 480)
         camera.framerate = 15
-        camera.start_recording(
-            # Throw away the video data, but make sure we're using H.264
-            '/dev/null', format='h264',
-            # Record motion data to our custom output object
-            motion_output=output,
-            splitter_port = 0
-            )
         rawCapture = PiRGBArray(camera, size=(640, 480))
- 
+        camera.start_recording('/dev/null', format='h264', splitter_port=0, motion_output=output)
         # allow the camera to warmup
         time.sleep(0.1)
  
