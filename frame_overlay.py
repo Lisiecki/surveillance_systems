@@ -12,24 +12,20 @@ from PIL import Image
 class DetectMotion(picamera.array.PiMotionAnalysis):
     # Analyze motion data to determine current location of intruder
     def analyze(self, motion_data):
+        motion_data = np.sqrt(
+            np.square(motion_data['x'].astype(np.float)) +
+            np.square(motion_data['y'].astype(np.float))
+            ).clip(0, 255).astype(np.uint8)
         if (motion_data > 50).sum() > 10:
-            motion_data = np.sqrt(
-                np.square(motion_data['x'].astype(np.float)) +
-                np.square(motion_data['y'].astype(np.float))
-                ).clip(0, 255).astype(np.uint8)
-            # grab the raw NumPy array representing the image, then initialize the timestamp
-	        # and occupied/unoccupied text
-            image = frame.array
-
 	        # show the frame
-            cv2.imshow("Frame", image)
+            cv2.imshow("Frame", motion_data)
 
 
 with picamera.PiCamera() as camera:
     with DetectMotion(camera) as output:
         stream = BytesIO()
         camera.resolution = (640, 480)
-        camera.framerate = 30
+        camera.framerate = 15
         camera.start_recording(
             # Throw away the video data, but make sure we're using H.264
             '/dev/null', format='h264',
