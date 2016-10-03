@@ -16,9 +16,8 @@ class DetectMotion(picamera.array.PiMotionAnalysis):
             np.square(motion_data['x'].astype(np.float)) +
             np.square(motion_data['y'].astype(np.float))
             ).clip(0, 255).astype(np.uint8)
-        if (motion_data > 50).sum() > 10:
-	        # show the frame
-            cv2.imshow("Frame", motion_data)
+	    # show the frame
+        cv2.imshow("Frame", motion_data)
 
 
 with picamera.PiCamera() as camera:
