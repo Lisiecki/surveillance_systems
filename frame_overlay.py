@@ -10,15 +10,21 @@ from picamera.array import PiRGBArray
 from io import BytesIO
 from PIL import Image
 
+(x, y, h, w) = (0, 0, 0, 0)
+
 class DetectMotion(PiMotionAnalysis):
     # Analyze motion data to determine current location of intruder
     def analyze(self, motion_data):
+        global x
+        global y
+        global h
+        global w
         motion_data = np.sqrt(
             np.square(motion_data['x'].astype(np.float)) +
             np.square(motion_data['y'].astype(np.float))
             ).clip(0, 255).astype(np.uint8)
-        print("i")
-
+        if (motion_data > 50).sum() > 10:
+            (x, y, h, w) = (50, 50, 50, 50)
 
 with picamera.PiCamera() as camera:
     with DetectMotion(camera) as output:
@@ -32,10 +38,13 @@ with picamera.PiCamera() as camera:
  
         # capture frames from the camera
         for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True, splitter_port=1):
+            #(x, y, w, h) = cv2.boundingRect(c)
+            #cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
 	        # grab the raw NumPy array representing the image, then initialize the timestamp
 	        # and occupied/unoccupied text
             image = frame.array
- 
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
 	        # show the frame
             cv2.imshow("Frame", image)
             key = cv2.waitKey(1) & 0xFF
