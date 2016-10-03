@@ -31,16 +31,27 @@ with picamera.PiCamera() as camera:
             # Throw away the video data, but make sure we're using H.264
             '/dev/null', format='h264',
             # Record motion data to our custom output object
-            motion_output=output
+            motion_output=output,
+            splitter_port = 0
             )
-
+        rawCapture = PiRGBArray(camera, size=(640, 480))
+ 
         # allow the camera to warmup
         time.sleep(0.1)
-        while 1:
-            try:            
-                # show the frame
-                cv2.imshow("Frame", frame)
-                time.sleep(0.1)
-            except KeyboardInterrupt:
-                cv2.destroyAllWindows()
-                camera.stop_recording()
+ 
+        # capture frames from the camera
+        for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True, splitter_port=1):
+	        # grab the raw NumPy array representing the image, then initialize the timestamp
+	        # and occupied/unoccupied text
+            image = frame.array
+ 
+	        # show the frame
+            cv2.imshow("Frame", image)
+            key = cv2.waitKey(1) & 0xFF
+ 
+	        # clear the stream in preparation for the next frame
+            rawCapture.truncate(0)
+ 
+	        # if the `q` key was pressed, break from the loop
+            if key == ord("q"):
+                break
